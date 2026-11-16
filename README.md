@@ -1,96 +1,364 @@
-# chinese-xinhua
+# chdict
 
-中华新华字典数据库和 API 。收录包括 14032 条歇后语，16142 个汉字，264434 个词语，31648 个成语。
+**公开、纯静态、可跨域调用的中文词典 JSON API。**
 
-## Project Structure
+`chdict` 把成语、汉字、词语、歇后语数据预先生成成静态 JSON 文件，并发布到 GitHub Pages。使用方无需部署后端、无需数据库、无需鉴权，直接通过 HTTP 读取即可。
 
-```
-chinese-xinhua/
-|
-+- data/ <-- 数据文件夹
-|  |
-|  +- idiom.json <-- 成语
-|  |
-|  +- word.json <-- 汉字
-|  |
-|  +- xiehouyu.json <-- 歇后语
-|  |
-|  +- ci.json <-- 词语
+> 本项目 is a fork of [pwxcoo/chinese-xinhua](https://github.com/pwxcoo/chinese-xinhua)。  
+> 原始仓库：[https://github.com/pwxcoo/chinese-xinhua](https://github.com/pwxcoo/chinese-xinhua)  
+> 当前仓库：[https://github.com/LelelelingStudio/chinese-xinhua1](https://github.com/LelelelingStudio/chinese-xinhua1)
+
+---
+
+## 在线地址
+
+```text
+https://chdict.leleleling.site
 ```
 
-## Database Introduction
+API 根路径：
 
-### 成语 (idiom.json)
+```text
+https://chdict.leleleling.site/api/v1
+```
+
+---
+
+## 特点
+
+- **纯静态**：没有服务器、没有数据库运行时、没有函数计算
+- **公开读取**：GitHub Pages 默认返回 `Access-Control-Allow-Origin: *`
+- **跨域可用**：任意网站、任意前端都可以直接 `fetch`
+- **可缓存**：所有资源都是稳定 URL，适合浏览器和 CDN 缓存
+- **可分片**：避免每次加载十几 MB 的全量文件
+- **可版本化**：通过 `/api/v1/manifest.json` 获取版本、数据量和文件清单
+- **无后端**：只需要把本仓库部署到 GitHub Pages
+
+---
+
+## 重要说明：这是静态 API
+
+这不是动态搜索服务。
+
+本项目**不会**提供这种接口：
+
+```text
+GET /api/v1/search?q=阿鼻
+```
+
+因为 GitHub Pages 只能返回真实存在的静态文件。
+
+正确用法是：
+
+1. 读取轻量查询索引
+2. 在浏览器本地过滤
+3. 根据索引里的 `shard` 和 `offset` 读取对应分片
+4. 从分片中取出完整记录
+
+也就是说：**查询逻辑在使用方前端，本仓库只提供数据文件。**
+
+---
+
+## 数据集
+
+当前生成结果以 `api/v1/manifest.json` 为准：
+
+| 数据集 | 说明 | 条目数 |
+| --- | --- | ---: |
+| `idiom` | 成语 | 30,895 |
+| `word` | 汉字 | 16,142 |
+| `ci` | 词语 | 264,434 |
+| `xiehouyu` | 歇后语 | 14,032 |
+
+---
+
+## API 文件结构
+
+```text
+api/v1/
+  manifest.json
+  raw/
+    idiom.json
+    word.json
+    ci.json
+    xiehouyu.json
+  idiom/
+    shards/
+      a.json ... z.json
+  word/
+    shards/
+      a.json ... z.json
+  ci/
+    shards/
+      a.json ... z.json
+  xiehouyu/
+    shards/
+      a.json ... z.json
+    random-pool.json
+  search/
+    idiom-char-map.json
+    word-char-map.json
+    ci-char-map.json
+    xiehouyu-char-map.json
+    idiom-index-a.json ... idiom-index-z.json
+    word-index-a.json  ... word-index-z.json
+    ci-index-a.json    ... ci-index-z.json
+    xiehouyu-index-a.json ... xiehouyu-index-z.json
+```
+
+---
+
+## API 路径
+
+| 路径 | 说明 |
+| --- | --- |
+| `/api/v1/manifest.json` | 版本、数据量、文件清单 |
+| `/api/v1/raw/idiom.json` | 全量成语数据 |
+| `/api/v1/raw/word.json` | 全量汉字数据 |
+| `/api/v1/raw/ci.json` | 全量词语数据 |
+| `/api/v1/raw/xiehouyu.json` | 全量歇后语数据 |
+| `/api/v1/{dataset}/shards/{shard}.json` | 分片完整数据 |
+| `/api/v1/search/{dataset}-index-{shard}.json` | 轻量查询索引 |
+| `/api/v1/search/{dataset}-char-map.json` | 首字到分片映射 |
+| `/api/v1/xiehouyu/random-pool.json` | 歇后语随机池 |
+
+其中：
+
+- `dataset` 可选：`idiom`、`word`、`ci`、`xiehouyu`
+- `shard` 可选：`a` 到 `z`
+
+---
+
+## manifest.json 示例
+
+```json
+{
+  "name": "chdict",
+  "version": "1.0.0",
+  "source": "https://github.com/pwxcoo/chinese-xinhua",
+  "repository": "https://github.com/LelelelingStudio/chinese-xinhua1",
+  "site": "https://chdict.leleleling.site",
+  "cors": "*",
+  "entryMode": "shard-offset",
+  "datasets": {
+    "idiom": {
+      "count": 31648,
+      "raw": "api/v1/raw/idiom.json",
+      "shardPattern": "api/v1/idiom/shards/{shard}.json",
+      "indexPattern": "api/v1/search/idiom-index-{shard}.json",
+      "charMap": "api/v1/search/idiom-char-map.json"
+    }
+  }
+}
+```
+
+---
+
+## 查询索引格式
+
+索引文件只保留查询所需字段：
 
 ```json
 [
-    {
-        "derivation": "语出《法华经·法师功德品》下至阿鼻地狱。”",
-        "example": "但也有少数意志薄弱的……逐步上当，终至堕入～。★《上饶集中营·炼狱杂记》",
-        "explanation": "阿鼻梵语的译音，意译为无间”，即痛苦无有间断之意。常用来比喻黑暗的社会和严酷的牢狱。又比喻无法摆脱的极其痛苦的境地。",
-        "pinyin": "ā bí dì yù",
-        "word": "阿鼻地狱",
-        "abbreviation": "abdy"
-    },
-    ...
+  {
+    "id": "idiom-000001",
+    "key": "阿鼻地狱",
+    "shard": "a",
+    "offset": 0,
+    "pinyin": "ā bí dì yù",
+    "pinyinAscii": "a bi di yu",
+    "abbreviation": "abdy"
+  }
 ]
 ```
 
-### 词语 (ci.json)
+字段说明：
 
-```json
-[
-    { 
-        "ci": "宸纶", 
-        "explanation": "1.帝王的诏书﹑制令。" 
-    },
-    ...
-]
+| 字段 | 说明 |
+| --- | --- |
+| `id` | 稳定 ID |
+| `key` | 原始词条 |
+| `shard` | 所在分片 |
+| `offset` | 在分片数组中的下标 |
+| `pinyin` | 原始拼音，可选 |
+| `pinyinAscii` | 去掉声调的拼音，可选 |
+| `abbreviation` | 拼音首字母，可选 |
+
+---
+
+## 快速开始
+
+### 读取版本信息
+
+```javascript
+const BASE = 'https://chdict.leleleling.site/api/v1';
+
+const manifest = await fetch(`${BASE}/manifest.json`).then((res) => res.json());
+
+console.log(manifest.version);
+console.log(manifest.datasets.idiom.count);
 ```
 
-### 汉字 (word.json)
+### 读取全量成语
 
-```json
-[
-    {
-        "word": "嗄",
-        "oldword": "嗄",
-        "strokes": "13",
-        "pinyin": "á",
-        "radicals": "口",
-        "explanation": "嗄〈叹〉\n\n 同啊”。表示省悟或惊奇\n\n 嗄!难道这里是没有地方官的么?--宋·佚名《新编五代史平话》\n\n 嗄á叹词。在句首，〈表〉疑问或反问～，这是什么？～，你想干什么？\"嗄\"另见shà㈠。\n\n 嗄shà\n\n ⒈声音嘶哑～声。\n\n 嗄a 1.助词。表示强调﹑肯定或辩解。 2.助词。方言。表示疑问或反诘。\n\n 嗄xià 1.见\"嗄饭\"。 2.见\"嗄程\"。",
-        "more": "嗄 ga、a 部首 口 部首笔画 03 总笔画 13  嗄2\nshà\n〈形〉\n(1)\n声音嘶哑的 [hoarse]\n终日嚎而嗌不嗄。--《老子》\n(2)\n又如嗄哑,嗄嘶(嗓音嘶哑)\n嗄\nshà\n〈叹〉\n(1)\n什么 [what]--表示否定\n我要丢个干干净,看你嗄法把我治。--清·蒲松龄《聊斋俚曲集》\n(2)\n旧时仆役对主人、下级对上级的应诺声 [yes]\n带进来”。两边军士应一声嗄”,即将牛皋推至面前。--《说岳全传》\n另见á\n嗄1\ná\n〈叹〉\n同啊”(á)。表示省悟或惊奇 [ah]\n嗄!难道这里是没有地方官的么?--宋·佚名《新编五代史平话》\n另见shà\n嗄1\nshà　ㄕㄚ╝\n嗓音嘶哑。\n郑码janr，u55c4，gbke0c4\n笔画数13，部首口，笔顺编号2511325111354\n嗄2\ná　ㄚˊ\n同啊2”。\n郑码janr，u55c4，gbke0c4\n笔画数13，部首口，笔顺编号2511325111354"
-    },
-    ... 
-]
+```javascript
+const idioms = await fetch(
+  'https://chdict.leleleling.site/api/v1/raw/idiom.json'
+).then((res) => res.json());
 ```
 
-### 歇后语 (xiehouyu.json)
+### 读取某个分片
 
-```json
-[
-    {
-        "riddle": "飞机上聊天",
-        "answer": "高谈阔论"
-    },
-    ...
-]
+```javascript
+const shardA = await fetch(
+  'https://chdict.leleleling.site/api/v1/idiom/shards/a.json'
+).then((res) => res.json());
 ```
 
-## Changelog
+### 本地查询示例
 
-<details><summary>查看更新日志  </summary> 
+```javascript
+const SITE = 'https://chdict.leleleling.site';
+const BASE = `${SITE}/api/v1`;
 
-- 20181216: 成语数据集去重
-- 20181216: API 功能下线
-- 20180803: 添加词语数据集
-- 20180206: 添加成语，歇后语，汉字数据集
+async function searchIdiom(keyword) {
+  const manifest = await fetch(`${BASE}/manifest.json`).then((res) => res.json());
+  const charMap = await fetch(
+    `${SITE}/${manifest.datasets.idiom.charMap}`
+  ).then((res) => res.json());
 
-</details>
+  const first = keyword.trim().charAt(0).toLowerCase();
+  const shard = /[a-z]/.test(first)
+    ? first
+    : charMap[keyword.trim().charAt(0)];
 
+  if (!shard) return [];
 
-## Copyright
+  const indexPath = manifest.datasets.idiom.indexPattern.replace('{shard}', shard);
+  const index = await fetch(`${SITE}/${indexPath}`).then((res) => res.json());
 
-本仓库的所有的数据都是我从网上收集整理的。仓库本来的目的是因为我以前想做一个成语接龙的东西，但是苦于没有现成可用的数据库，自己就从各个网站抓取整理了一份。放在 Github 是为了方便自己的使用，同时也能方便有类似需求的人不用去做这些 trival 的工作。所有抓取数据的[脚本](./scripts/README.md)都在仓库里。
+  const hits = index.filter((item) => {
+    const q = keyword.trim().toLowerCase();
+    return (
+      item.key.includes(keyword.trim()) ||
+      item.pinyinAscii?.includes(q) ||
+      item.abbreviation?.includes(q)
+    );
+  });
 
-**本仓库无任何商业目的！如果有侵权行为将及时删除！**
+  const shardPath = manifest.datasets.idiom.shardPattern.replace('{shard}', shard);
+  const data = await fetch(`${SITE}/${shardPath}`).then((res) => res.json());
+
+  return hits.map((hit) => data[hit.offset]);
+}
+```
+
+根目录 `index.html` 里有一个可直接运行的完整示例。
+
+---
+
+## CORS
+
+GitHub Pages 静态资源默认返回：
+
+```text
+Access-Control-Allow-Origin: *
+```
+
+这意味着任何网站都可以直接读取这些 JSON 文件。
+
+验证方式：
+
+```bash
+curl -I https://chdict.leleleling.site/api/v1/manifest.json
+```
+
+---
+
+## 本地构建
+
+原始数据位于 `data/`，原始抓取脚本位于 `scripts/`。
+
+生成静态 API 文件：
+
+```bash
+npm run build
+```
+
+或：
+
+```bash
+node scripts/build-static-api.mjs
+```
+
+生成结果位于：
+
+```text
+api/v1/
+```
+
+---
+
+## GitHub Pages 部署
+
+本仓库按根目录部署。
+
+在 GitHub 仓库设置中：
+
+```text
+Settings → Pages
+Source: Deploy from a branch
+Branch: master
+Folder: / (root)
+```
+
+自定义域名：
+
+```text
+chdict.leleleling.site
+```
+
+建议开启：
+
+```text
+Enforce HTTPS
+```
+
+仓库根目录的 `CNAME` 文件内容为：
+
+```text
+chdict.leleleling.site
+```
+
+---
+
+## 限制
+
+- 没有服务端搜索，查询逻辑需要在使用方本地完成
+- 没有用户系统、鉴权、写入接口、限流
+- GitHub Pages 站点大小上限约 1 GB
+- GitHub Pages 有约 100 GB/月的软带宽限制
+- 全量 JSON 文件较大，建议优先使用分片和索引
+- GitHub Pages 不支持自定义响应头，CORS 使用平台默认值 `*`
+
+---
+
+## 数据来源与声明
+
+本仓库的数据来自上游项目 [pwxcoo/chinese-xinhua](https://github.com/pwxcoo/chinese-xinhua)，由原作者从公开网络收集整理。
+
+本 fork 仅供学习和一般查询使用，不对数据准确性、完整性或适用性作担保。
+
+使用本项目数据时，请：
+
+- 保留上游来源说明
+- 遵守原数据及相关平台的使用条款
+- 如发现侵权或错误，通过 Issue 反馈
+
+上游 README 原声明：**本仓库无任何商业目的！如果有侵权行为将及时删除！**
+
+---
+
+## License
+
+本项目沿用上游仓库的 [MIT License](./LICENSE)。

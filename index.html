@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>chdict - 纯静态中文词典 API</title>
+  <meta name="description" content="chdict 是公开、纯静态、可跨域调用的中文词典 JSON API，包含成语、汉字、词语和歇后语数据。">
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: rgba(255, 255, 255, 0.06);
+      --panel-strong: rgba(255, 255, 255, 0.1);
+      --text: #eef2ff;
+      --muted: #a5b4fc;
+      --line: rgba(255, 255, 255, 0.12);
+      --accent: #7dd3fc;
+      --accent-2: #c4b5fd;
+      --ok: #86efac;
+      --warn: #fde68a;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 10%, rgba(125, 211, 252, 0.18), transparent 32rem),
+        radial-gradient(circle at 88% 0%, rgba(196, 181, 253, 0.18), transparent 30rem),
+        var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.65;
+    }
+
+    a { color: var(--accent); }
+
+    .wrap {
+      width: min(1100px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 72px 0 44px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: .04em;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--ok);
+      box-shadow: 0 0 0 5px rgba(134, 239, 172, 0.12);
+    }
+
+    h1 {
+      margin: 22px 0 14px;
+      font-size: clamp(42px, 7vw, 82px);
+      line-height: 1.02;
+      letter-spacing: -0.055em;
+    }
+
+    .gradient {
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin: 0;
+      color: #c7d2fe;
+      font-size: clamp(17px, 2.2vw, 21px);
+    }
+
+    .fork {
+      margin-top: 22px;
+      padding: 14px 16px;
+      border-left: 3px solid var(--accent-2);
+      background: var(--panel);
+      border-radius: 0 12px 12px 0;
+      color: var(--warn);
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin: 34px 0;
+    }
+
+    .stat {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 26px;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    section {
+      margin: 34px 0;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    h3 {
+      margin: 24px 0 8px;
+      font-size: 17px;
+      color: var(--muted);
+    }
+
+    p { margin: 10px 0; }
+
+    code, pre {
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    code {
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.28);
+      color: #bae6fd;
+    }
+
+    pre {
+      overflow: auto;
+      margin: 14px 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.34);
+      color: #dbeafe;
+      line-height: 1.6;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { color: var(--muted); font-weight: 600; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.15);
+    }
+
+    .status {
+      min-height: 24px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .results {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel-strong);
+    }
+
+    .card h4 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 5px 0;
+      color: #dbeafe;
+      font-size: 14px;
+    }
+
+    .muted { color: var(--muted); }
+
+    .pill {
+      display: inline-block;
+      margin-right: 6px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(125, 211, 252, 0.14);
+      color: var(--accent);
+      font-size: 12px;
+    }
+
+    footer {
+      padding: 28px 0 60px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media (max-width: 760px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .controls { grid-template-columns: 1fr; }
+      section { padding: 20px; }
+      header { padding-top: 44px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow"><span class="dot"></span> static json api · no backend</div>
+      <h1><span class="gradient">chdict</span></h1>
+      <p class="lead">
+        公开、纯静态、可跨域调用的中文词典 JSON API。包含成语、汉字、词语、歇后语数据，
+        任何人都可以直接用 <code>fetch</code> 读取，不需要后端，不需要鉴权。
+      </p>
+      <div class="fork">
+        This repository is a fork of
+        <a href="https://github.com/pwxcoo/chinese-xinhua" target="_blank" rel="noopener">pwxcoo/chinese-xinhua</a>.
+        原始仓库来自这里，本站点只做静态 API 化整理与发布。
+      </div>
+    </header>
+
+    <div class="grid" id="stats">
+      <div class="stat"><strong id="stat-version">v1.0.0</strong><span>API version</span></div>
+      <div class="stat"><strong>4</strong><span>datasets</span></div>
+      <div class="stat"><strong>*</strong><span>CORS origin</span></div>
+      <div class="stat"><strong>0</strong><span>backend services</span></div>
+    </div>
+
+    <section>
+      <h2>Base URL</h2>
+      <p>所有 API 文件都在这个根路径下面：</p>
+      <pre><code>https://chdict.leleleling.site/api/v1</code></pre>
+      <p>
+        GitHub Pages 默认返回 <code>Access-Control-Allow-Origin: *</code>，
+        所以这个 API 可以被任意网站跨域调用。
+      </p>
+    </section>
+
+    <section>
+      <h2>试一下</h2>
+      <p class="muted">
+        这是纯前端 demo：浏览器加载索引，在本地过滤，再读取对应分片。没有向任何后端发送请求。
+      </p>
+
+      <div class="controls">
+        <select id="dataset">
+          <option value="idiom">成语 idiom</option>
+          <option value="word">汉字 word</option>
+          <option value="ci">词语 ci</option>
+          <option value="xiehouyu">歇后语 xiehouyu</option>
+        </select>
+        <input id="query" type="search" placeholder="输入词条、拼音或拼音首字母，例如：阿鼻 / abdy" autocomplete="off">
+      </div>
+
+      <div class="status" id="status">输入关键词开始查询。</div>
+      <div class="results" id="results"></div>
+    </section>
+
+    <section>
+      <h2>快速开始</h2>
+
+      <h3>读取 manifest</h3>
+      <pre><code>const BASE = 'https://chdict.leleleling.site/api/v1';
+
+const manifest = await fetch(BASE + '/manifest.json').then(r =&gt; r.json());
+console.log(manifest.version);
+console.log(manifest.datasets.idiom.count);</code></pre>
+
+      <h3>读取全量数据</h3>
+      <pre><code>const idioms = await fetch(
+  'https://chdict.leleleling.site/api/v1/raw/idiom.json'
+).then(r =&gt; r.json());</code></pre>
+
+      <h3>读取分片</h3>
+      <pre><code>const shardA = await fetch(
+  'https://chdict.leleleling.site/api/v1/idiom/shards/a.json'
+).then(r =&gt; r.json());</code></pre>
+
+      <h3>读取查询索引</h3>
+      <pre><code>const index = await fetch(
+  'https://chdict.leleleling.site/api/v1/search/idiom-index-a.json'
+).then(r =&gt; r.json());</code></pre>
+    </section>
+
+    <section>
+      <h2>API 路径</h2>
+      <table>
+        <thead>
+          <tr><th>路径</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>/api/v1/manifest.json</code></td><td>版本、数据量、文件清单</td></tr>
+          <tr><td><code>/api/v1/raw/{dataset}.json</code></td><td>全量原始数据</td></tr>
+          <tr><td><code>/api/v1/{dataset}/shards/{a-z}.json</code></td><td>分片完整数据</td></tr>
+          <tr><td><code>/api/v1/search/{dataset}-index-{a-z}.json</code></td><td>轻量查询索引</td></tr>
+          <tr><td><code>/api/v1/search/{dataset}-char-map.json</code></td><td>首字到分片映射</td></tr>
+          <tr><td><code>/api/v1/xiehouyu/random-pool.json</code></td><td>歇后语随机池</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">
+        <code>dataset</code> 可选：<code>idiom</code>、<code>word</code>、<code>ci</code>、<code>xiehouyu</code>。
+        <code>shard</code> 为 <code>a</code> 到 <code>z</code>。
+      </p>
+    </section>
+
+    <section>
+      <h2>查询是怎么工作的</h2>
+      <p>因为这是纯静态 API，所以没有服务端搜索。推荐流程是：</p>
+      <ol>
+        <li>加载 <code>manifest.json</code></li>
+        <li>根据输入首字或拼音首字母确定 <code>shard</code></li>
+        <li>加载对应的轻量索引文件</li>
+        <li>在浏览器本地过滤 <code>key</code>、<code>pinyinAscii</code>、<code>abbreviation</code></li>
+        <li>命中后用 <code>shard</code> 和 <code>offset</code> 从分片中取完整记录</li>
+      </ol>
+      <p class="muted">
+        如果你只需要批量数据，直接读 <code>/api/v1/raw/*.json</code> 或分片文件即可。
+      </p>
+    </section>
+
+    <section>
+      <h2>限制</h2>
+      <ul>
+        <li>没有服务端 <code>?q=</code> 查询接口</li>
+        <li>没有写入、鉴权、用户系统或限流</li>
+        <li>GitHub Pages 站点大小约 1 GB 上限</li>
+        <li>GitHub Pages 有约 100 GB/月软带宽限制</li>
+        <li>全量 JSON 比较大，建议优先用索引 + 分片</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>数据来源</h2>
+      <p>
+        数据来自上游项目
+        <a href="https://github.com/pwxcoo/chinese-xinhua" target="_blank" rel="noopener">pwxcoo/chinese-xinhua</a>。
+        本 fork 只负责静态 API 化整理和发布。使用数据时请保留来源说明，并遵守原数据相关条款。
+      </p>
+    </section>
+
+    <footer>
+      chdict · public static JSON API · fork of pwxcoo/chinese-xinhua
+    </footer>
+  </div>
+
+  <script>
+    const BASE = '/api/v1';
+    const SHARDS = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+    const datasetEl = document.getElementById('dataset');
+    const queryEl = document.getElementById('query');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    const cache = {
+      manifest: null,
+      charMaps: {},
+      indexes: {},
+      shards: {}
+    };
+
+    function normalizeText(value) {
+      return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    async function loadJson(path) {
+      const res = await fetch(path);
+      if (!res.ok) throw new Error('加载失败：' + path);
+      return res.json();
+    }
+
+    async function getManifest() {
+      if (!cache.manifest) {
+        cache.manifest = await loadJson(BASE + '/manifest.json');
+      }
+      return cache.manifest;
+    }
+
+    async function getCharMap(dataset) {
+      if (!cache.charMaps[dataset]) {
+        const manifest = await getManifest();
+        cache.charMaps[dataset] = await loadJson('/' + manifest.datasets[dataset].charMap);
+      }
+      return cache.charMaps[dataset];
+    }
+
+    async function getIndex(dataset, shard) {
+      const key = dataset + ':' + shard;
+      if (!cache.indexes[key]) {
+        const manifest = await getManifest();
+        const path = manifest.datasets[dataset].indexPattern.replace('{shard}', shard);
+        cache.indexes[key] = await loadJson('/' + path);
+      }
+      return cache.indexes[key];
+    }
+
+    async function getShard(dataset, shard) {
+      const key = dataset + ':' + shard;
+      if (!cache.shards[key]) {
+        const manifest = await getManifest();
+        const path = manifest.datasets[dataset].shardPattern.replace('{shard}', shard);
+        cache.shards[key] = await loadJson('/' + path);
+      }
+      return cache.shards[key];
+    }
+
+    async function resolveShard(dataset, keyword) {
+      const first = keyword.charAt(0).toLowerCase();
+      if (/[a-z]/.test(first)) return first;
+
+      const charMap = await getCharMap(dataset);
+      return charMap[keyword.charAt(0)] || null;
+    }
+
+    function match(entry, keyword) {
+      const q = normalizeText(keyword);
+      return (
+        entry.key.includes(keyword) ||
+        entry.pinyinAscii?.includes(q) ||
+        entry.abbreviation?.includes(q)
+      );
+    }
+
+    function renderCard(dataset, record) {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      if (dataset === 'idiom') {
+        card.innerHTML =
+          '<h4>' + escapeHtml(record.word) + ' <span class="pill">' + escapeHtml(record.pinyin) + '</span></h4>' +
+          '<p>' + escapeHtml(record.explanation) + '</p>' +
+          (record.derivation ? '<p class="muted">出处：' + escapeHtml(record.derivation) + '</p>' : '') +
+          (record.example ? '<p class="muted">示例：' + escapeHtml(record.example) + '</p>' : '');
+      } else if (dataset === 'word') {
+        card.innerHTML =
+          '<h4>' + escapeHtml(record.word) + ' <span class="pill">' + escapeHtml(record.pinyin) + '</span></h4>' +
+          '<p class="muted">部首：' + escapeHtml(record.radicals) + ' · 笔画：' + escapeHtml(record.strokes) + '</p>' +
+          '<p>' + escapeHtml(record.explanation) + '</p>';
+      } else if (dataset === 'ci') {
+        card.innerHTML =
+          '<h4>' + escapeHtml(record.ci) + '</h4>' +
+          '<p>' + escapeHtml(record.explanation) + '</p>';
+      } else {
+        card.innerHTML =
+          '<h4>' + escapeHtml(record.riddle) + '</h4>' +
+          '<p>' + escapeHtml(record.answer) + '</p>';
+      }
+
+      return card;
+    }
+
+    async function runSearch() {
+      const dataset = datasetEl.value;
+      const keyword = queryEl.value.trim();
+
+      resultsEl.innerHTML = '';
+
+      if (!keyword) {
+        statusEl.textContent = '输入关键词开始查询。';
+        return;
+      }
+
+      statusEl.textContent = '查询中...';
+
+      try {
+        const shard = await resolveShard(dataset, keyword);
+
+        if (!shard || !SHARDS.includes(shard)) {
+          statusEl.textContent = '没有找到对应分片，请换一个首字或拼音首字母。';
+          return;
+        }
+
+        const index = await getIndex(dataset, shard);
+        const hits = index.filter((entry) => match(entry, keyword)).slice(0, 20);
+
+        if (!hits.length) {
+          statusEl.textContent = '没有匹配结果。';
+          return;
+        }
+
+        const data = await getShard(dataset, shard);
+        const records = hits
+          .map((hit) => data[hit.offset])
+          .filter(Boolean);
+
+        statusEl.textContent = '找到 ' + records.length + ' 条结果（最多显示 20 条）。';
+
+        for (const record of records) {
+          resultsEl.appendChild(renderCard(dataset, record));
+        }
+      } catch (err) {
+        statusEl.textContent = '查询失败：' + err.message;
+      }
+    }
+
+    let timer = null;
+
+    queryEl.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(runSearch, 220);
+    });
+
+    datasetEl.addEventListener('change', runSearch);
+
+    getManifest()
+      .then((manifest) => {
+        document.getElementById('stat-version').textContent = 'v' + manifest.version;
+        const counts = Object.values(manifest.datasets).reduce((sum, item) => sum + item.count, 0);
+        statusEl.textContent = 'API 已加载，共 ' + counts.toLocaleString('zh-CN') + ' 条数据。输入关键词开始查询。';
+      })
+      .catch((err) => {
+        statusEl.textContent = '无法加载 manifest：' + err.message;
+      });
+  </script>
+</body>
+</html>
