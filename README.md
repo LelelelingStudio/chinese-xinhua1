@@ -2,7 +2,7 @@
 
 **公开、纯静态、可跨域调用的中文词典 JSON API。**
 
-`chdict` 把成语、汉字、词语、歇后语数据预先生成成静态 JSON 文件，并发布到 GitHub Pages。使用方无需部署后端、无需数据库、无需鉴权，直接通过 HTTP 读取即可。
+`chdict` 把成语、汉字、词语、歇后语数据预先生成成静态 JSON 文件，并发布到 Surge CDN。使用方无需部署后端、无需数据库、无需鉴权，直接通过 HTTP 读取即可。
 
 > 本项目 is a fork of [pwxcoo/chinese-xinhua](https://github.com/pwxcoo/chinese-xinhua)。  
 > 原始仓库：[https://github.com/pwxcoo/chinese-xinhua](https://github.com/pwxcoo/chinese-xinhua)  
@@ -27,12 +27,12 @@ https://chdict.leleleling.site/api/v1
 ## 特点
 
 - **纯静态**：没有服务器、没有数据库运行时、没有函数计算
-- **公开读取**：GitHub Pages 默认返回 `Access-Control-Allow-Origin: *`
+- **公开读取**：通过根目录 `CORS` 文件返回 `Access-Control-Allow-Origin: *`
 - **跨域可用**：任意网站、任意前端都可以直接 `fetch`
 - **可缓存**：所有资源都是稳定 URL，适合浏览器和 CDN 缓存
 - **可分片**：避免每次加载十几 MB 的全量文件
 - **可版本化**：通过 `/api/v1/manifest.json` 获取版本、数据量和文件清单
-- **无后端**：只需要把本仓库部署到 GitHub Pages
+- **无后端**：只需要把本仓库发布到 Surge
 
 ---
 
@@ -46,7 +46,7 @@ https://chdict.leleleling.site/api/v1
 GET /api/v1/search?q=阿鼻
 ```
 
-因为 GitHub Pages 只能返回真实存在的静态文件。
+因为静态托管只会返回真实存在的静态文件。
 
 正确用法是：
 
@@ -259,7 +259,13 @@ async function searchIdiom(keyword) {
 
 ## CORS
 
-GitHub Pages 静态资源默认返回：
+Surge 通过项目根目录的 `CORS` 文件开启跨域访问。本仓库根目录的 `CORS` 文件内容为：
+
+```text
+*
+```
+
+因此所有静态资源都会返回：
 
 ```text
 Access-Control-Allow-Origin: *
@@ -267,10 +273,16 @@ Access-Control-Allow-Origin: *
 
 这意味着任何网站都可以直接读取这些 JSON 文件。
 
+注意：
+
+- CORS 对整个 Surge 项目生效，不能按子路径单独配置
+- `CORS` 文件本身不会被公开访问
+- CORS 在 Surge 所有套餐中免费
+
 验证方式：
 
 ```bash
-curl -I https://chdict.leleleling.site/api/v1/manifest.json
+curl -I https://chdict.leleleling.site/api/v1/manifest.json | grep -i access-control
 ```
 
 ---
@@ -299,35 +311,47 @@ api/v1/
 
 ---
 
-## GitHub Pages 部署
+## Surge 部署
 
-本仓库按根目录部署。
+本仓库发布根目录，也就是包含 `index.html`、`CNAME`、`CORS` 和 `api/` 的目录。
 
-在 GitHub 仓库设置中：
-
-```text
-Settings → Pages
-Source: Deploy from a branch
-Branch: master
-Folder: / (root)
-```
-
-自定义域名：
+自动部署由 GitHub Actions 完成：
 
 ```text
-chdict.leleleling.site
+.github/workflows/deploy.yml
 ```
 
-建议开启：
+Workflow 会在 `master` 分支 push 后执行：
 
-```text
-Enforce HTTPS
+```bash
+surge . chdict.leleleling.site
 ```
+
+所需 GitHub Secrets：
+
+| Secret | 说明 |
+| --- | --- |
+| `SURGE_LOGIN` | Surge 注册邮箱 |
+| `SURGE_TOKEN` | Surge 认证 Token |
 
 仓库根目录的 `CNAME` 文件内容为：
 
 ```text
 chdict.leleleling.site
+```
+
+仓库根目录的 `CORS` 文件内容为：
+
+```text
+*
+```
+
+HTTPS 由 Surge 自动配置并续期。
+
+DNS 需要按 Surge 要求配置；当前域名 `chdict.leleleling.site` 是子域名，推荐添加：
+
+```text
+CNAME  chdict  geo.surge.world
 ```
 
 ---
@@ -336,10 +360,10 @@ chdict.leleleling.site
 
 - 没有服务端搜索，查询逻辑需要在使用方本地完成
 - 没有用户系统、鉴权、写入接口、限流
-- GitHub Pages 站点大小上限约 1 GB
-- GitHub Pages 有约 100 GB/月的软带宽限制
+- 静态资源通过 Surge CDN 分发，带宽额度以 Surge 套餐为准
+- Surge 具体套餐额度以官方说明为准
 - 全量 JSON 文件较大，建议优先使用分片和索引
-- GitHub Pages 不支持自定义响应头，CORS 使用平台默认值 `*`
+- CORS 对整个 Surge 项目生效，由根目录 `CORS` 文件统一控制
 
 ---
 

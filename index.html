@@ -376,7 +376,7 @@
       <p>所有 API 文件都在这个根路径下面：</p>
       <pre><code>https://chdict.leleleling.site/api/v1</code></pre>
       <p>
-        GitHub Pages 默认返回 <code>Access-Control-Allow-Origin: *</code>，
+        Surge 通过项目根目录的 <code>CORS</code> 文件返回 <code>Access-Control-Allow-Origin: *</code>，
         所以这个 API 可以被任意网站跨域调用。
       </p>
     </section>
@@ -468,9 +468,10 @@ console.log(manifest.datasets.idiom.count);</code></pre>
       <ul>
         <li>没有服务端 <code>?q=</code> 查询接口</li>
         <li>没有写入、鉴权、用户系统或限流</li>
-        <li>GitHub Pages 站点大小约 1 GB 上限</li>
-        <li>GitHub Pages 有约 100 GB/月软带宽限制</li>
+        <li>静态资源通过 Surge CDN 分发，带宽额度以 Surge 套餐为准</li>
+        <li>Surge 具体套餐额度以官方说明为准</li>
         <li>全量 JSON 比较大，建议优先用索引 + 分片</li>
+        <li>CORS 对整个 Surge 项目生效，由根目录 <code>CORS</code> 文件统一控制</li>
       </ul>
     </section>
 
