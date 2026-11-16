@@ -374,7 +374,10 @@
     <section>
       <h2>Base URL</h2>
       <p>所有 API 文件都在这个根路径下面：</p>
-      <pre><code>https://chdict.leleleling.site/api/v1</code></pre>
+      <pre><code>https://chdict.surge.sh/api/v1</code></pre>
+      <p class="muted">
+        当前使用 Surge 临时子域名；自定义域名 <code>chdict.leleleling.site</code> 会在 DNS 恢复后切换。
+      </p>
       <p>
         Surge 通过项目根目录的 <code>CORS</code> 文件返回 <code>Access-Control-Allow-Origin: *</code>，
         所以这个 API 可以被任意网站跨域调用。
@@ -405,7 +408,7 @@
       <h2>快速开始</h2>
 
       <h3>读取 manifest</h3>
-      <pre><code>const BASE = 'https://chdict.leleleling.site/api/v1';
+      <pre><code>const BASE = 'https://chdict.surge.sh/api/v1';
 
 const manifest = await fetch(BASE + '/manifest.json').then(r =&gt; r.json());
 console.log(manifest.version);
@@ -413,17 +416,17 @@ console.log(manifest.datasets.idiom.count);</code></pre>
 
       <h3>读取全量数据</h3>
       <pre><code>const idioms = await fetch(
-  'https://chdict.leleleling.site/api/v1/raw/idiom.json'
+  'https://chdict.surge.sh/api/v1/raw/idiom.json'
 ).then(r =&gt; r.json());</code></pre>
 
       <h3>读取分片</h3>
       <pre><code>const shardA = await fetch(
-  'https://chdict.leleleling.site/api/v1/idiom/shards/a.json'
+  'https://chdict.surge.sh/api/v1/idiom/shards/a.json'
 ).then(r =&gt; r.json());</code></pre>
 
       <h3>读取查询索引</h3>
       <pre><code>const index = await fetch(
-  'https://chdict.leleleling.site/api/v1/search/idiom-index-a.json'
+  'https://chdict.surge.sh/api/v1/search/idiom-index-a.json'
 ).then(r =&gt; r.json());</code></pre>
     </section>
 

@@ -11,7 +11,7 @@ const SHARDS = 'abcdefghijklmnopqrstuvwxyz'.split('');
 const VERSION = '1.0.0';
 const SOURCE = 'https://github.com/pwxcoo/chinese-xinhua';
 const REPOSITORY = 'https://github.com/LelelelingStudio/chinese-xinhua1';
-const SITE = 'https://chdict.leleleling.site';
+const SITE = 'https://chdict.surge.sh';
 
 const DATASETS = [
   {

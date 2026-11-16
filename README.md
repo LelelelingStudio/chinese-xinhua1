@@ -13,13 +13,13 @@
 ## 在线地址
 
 ```text
-https://chdict.leleleling.site
+https://chdict.surge.sh
 ```
 
 API 根路径：
 
 ```text
-https://chdict.leleleling.site/api/v1
+https://chdict.surge.sh/api/v1
 ```
 
 ---
@@ -137,7 +137,7 @@ api/v1/
   "version": "1.0.0",
   "source": "https://github.com/pwxcoo/chinese-xinhua",
   "repository": "https://github.com/LelelelingStudio/chinese-xinhua1",
-  "site": "https://chdict.leleleling.site",
+  "site": "https://chdict.surge.sh",
   "cors": "*",
   "entryMode": "shard-offset",
   "datasets": {
@@ -191,7 +191,7 @@ api/v1/
 ### 读取版本信息
 
 ```javascript
-const BASE = 'https://chdict.leleleling.site/api/v1';
+const BASE = 'https://chdict.surge.sh/api/v1';
 
 const manifest = await fetch(`${BASE}/manifest.json`).then((res) => res.json());
 
@@ -203,7 +203,7 @@ console.log(manifest.datasets.idiom.count);
 
 ```javascript
 const idioms = await fetch(
-  'https://chdict.leleleling.site/api/v1/raw/idiom.json'
+  'https://chdict.surge.sh/api/v1/raw/idiom.json'
 ).then((res) => res.json());
 ```
 
@@ -211,14 +211,14 @@ const idioms = await fetch(
 
 ```javascript
 const shardA = await fetch(
-  'https://chdict.leleleling.site/api/v1/idiom/shards/a.json'
+  'https://chdict.surge.sh/api/v1/idiom/shards/a.json'
 ).then((res) => res.json());
 ```
 
 ### 本地查询示例
 
 ```javascript
-const SITE = 'https://chdict.leleleling.site';
+const SITE = 'https://chdict.surge.sh';
 const BASE = `${SITE}/api/v1`;
 
 async function searchIdiom(keyword) {
@@ -282,7 +282,7 @@ Access-Control-Allow-Origin: *
 验证方式：
 
 ```bash
-curl -I https://chdict.leleleling.site/api/v1/manifest.json | grep -i access-control
+curl -I https://chdict.surge.sh/api/v1/manifest.json | grep -i access-control
 ```
 
 ---
@@ -324,7 +324,7 @@ api/v1/
 Workflow 会在 `master` 分支 push 后执行：
 
 ```bash
-surge . chdict.leleleling.site
+surge . chdict.surge.sh
 ```
 
 所需 GitHub Secrets：
@@ -337,7 +337,7 @@ surge . chdict.leleleling.site
 仓库根目录的 `CNAME` 文件内容为：
 
 ```text
-chdict.leleleling.site
+chdict.surge.sh
 ```
 
 仓库根目录的 `CORS` 文件内容为：
@@ -348,11 +348,15 @@ chdict.leleleling.site
 
 HTTPS 由 Surge 自动配置并续期。
 
-DNS 需要按 Surge 要求配置；当前域名 `chdict.leleleling.site` 是子域名，推荐添加：
+当前使用 Surge 自带子域名，无需额外配置 DNS。
+
+计划中的自定义域名是 `chdict.leleleling.site`。等 DNS 管理页面恢复后，将该子域名指向 Surge：
 
 ```text
 CNAME  chdict  geo.surge.world
 ```
+
+切换自定义域名时，需要同时把 `CNAME` 文件和 `.github/workflows/deploy.yml` 中的目标改回 `chdict.leleleling.site`。
 
 ---
 
