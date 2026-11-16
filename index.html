@@ -101,6 +101,66 @@
       font-size: 14px;
     }
 
+    .star-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 26px;
+      padding: 20px 22px;
+      border: 1px solid rgba(253, 224, 71, 0.28);
+      border-radius: var(--radius);
+      background: linear-gradient(120deg, rgba(253, 224, 71, 0.12), rgba(125, 211, 252, 0.08));
+      box-shadow: var(--shadow);
+    }
+
+    .star-cta strong {
+      display: block;
+      font-size: 18px;
+    }
+
+    .star-cta span {
+      color: #fde68a;
+      font-size: 14px;
+    }
+
+    .star-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex: 0 0 auto;
+      padding: 12px 20px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(120deg, #fde68a, #fca5a5);
+      color: #111827;
+      font-weight: 800;
+      font-size: 15px;
+      text-decoration: none;
+      box-shadow: 0 10px 30px rgba(253, 224, 71, 0.22);
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .star-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 36px rgba(253, 224, 71, 0.32);
+    }
+
+    .star-chart {
+      margin-top: 18px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.24);
+    }
+
+    .star-chart img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -273,6 +333,8 @@
       .controls { grid-template-columns: 1fr; }
       section { padding: 20px; }
       header { padding-top: 44px; }
+      .star-cta { flex-direction: column; align-items: flex-start; }
+      .star-button { width: 100%; }
     }
   </style>
 </head>
@@ -289,6 +351,16 @@
         This repository is a fork of
         <a href="https://github.com/pwxcoo/chinese-xinhua" target="_blank" rel="noopener">pwxcoo/chinese-xinhua</a>.
         原始仓库来自这里，本站点只做静态 API 化整理与发布。
+      </div>
+
+      <div class="star-cta">
+        <div>
+          <strong>觉得 chdict 有用？来给仓库点个 Star 吧！</strong>
+          <span>你的 Star 能让更多人发现这个纯静态中文词典 API。</span>
+        </div>
+        <a class="star-button" href="https://github.com/LelelelingStudio/chinese-xinhua1" target="_blank" rel="noopener">
+          ★ Star on GitHub
+        </a>
       </div>
     </header>
 
@@ -409,6 +481,22 @@ console.log(manifest.datasets.idiom.count);</code></pre>
         <a href="https://github.com/pwxcoo/chinese-xinhua" target="_blank" rel="noopener">pwxcoo/chinese-xinhua</a>。
         本 fork 只负责静态 API 化整理和发布。使用数据时请保留来源说明，并遵守原数据相关条款。
       </p>
+    </section>
+
+    <section id="star-history">
+      <h2>Star History</h2>
+      <p class="muted">
+        如果这个 API 帮到了你，欢迎点上面的 Star 按钮支持一下。下面是仓库的 Star 增长曲线。
+      </p>
+      <a href="https://www.star-history.com/?repos=lelelelingstudio%2Fchinese-xinhua1&amp;type=date&amp;legend=top-left" target="_blank" rel="noopener">
+        <div class="star-chart">
+          <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=lelelelingstudio/chinese-xinhua1&amp;type=date&amp;theme=dark&amp;legend=top-left">
+            <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=lelelelingstudio/chinese-xinhua1&amp;type=date&amp;legend=top-left">
+            <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=lelelelingstudio/chinese-xinhua1&amp;type=date&amp;legend=top-left" loading="lazy">
+          </picture>
+        </div>
+      </a>
     </section>
 
     <footer>

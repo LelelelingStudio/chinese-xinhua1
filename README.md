@@ -359,6 +359,24 @@ chdict.leleleling.site
 
 ---
 
+## Star 支持
+
+如果 `chdict` 对你有帮助，欢迎给仓库点个 Star：
+
+[Star on GitHub](https://github.com/LelelelingStudio/chinese-xinhua1)
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=lelelelingstudio%2Fchinese-xinhua1&type=date&legend=top-left">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=lelelelingstudio/chinese-xinhua1&type=date&theme=dark&legend=top-left" />
+  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=lelelelingstudio/chinese-xinhua1&type=date&legend=top-left" />
+  <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=lelelelingstudio/chinese-xinhua1&type=date&legend=top-left" />
+</picture>
+</a>
+
+---
+
 ## License
 
 本项目沿用上游仓库的 [MIT License](./LICENSE)。
